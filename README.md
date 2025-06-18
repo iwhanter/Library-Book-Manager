@@ -34,20 +34,23 @@
 6. **Выдача и возврат книг** с проверкой прав доступа
 
 ## Сборка и запуск
-1. Убедитесь, что установлен JDK 11+ и Maven.
-2. Сборка: 
+I. Убедитесь, что установлен JDK 11+ и Maven.
+
+II. 1. Сборка: 
    ```
    mvn clean package
    ```
-3. Запуск:
-   ```
-   mvn exec:java -Dexec.mainClass="org.example.Main"
-   ```
-   или
+   2. Запуск:
    ```
    java -cp target/classes org.example.Main
    ```
+   или
 
+   1. Скачайте в файл library-book-manager.jar в наших релизах
+   2. Запустите приложение с помощью консольной команды:
+   ```
+   java -jar map-pathfinder-1.0.jar
+   ```
 ## Тестирование
 
 ### Базовые тесты
