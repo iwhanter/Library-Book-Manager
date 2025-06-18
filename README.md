@@ -49,7 +49,7 @@ II. 1. Сборка:
    1. Скачайте в файл library-book-manager.jar в наших релизах
    2. Запустите приложение с помощью консольной команды:
    ```
-   java -jar map-pathfinder-1.0.jar
+   java -jar library-book-manager.jar
    ```
 ## Тестирование
 
