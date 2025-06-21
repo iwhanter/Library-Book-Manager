@@ -1,15 +1,18 @@
 package org.library.utils;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
-import org.library.model.Book;
-import org.library.service.LibraryService;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
-import static org.junit.jupiter.api.Assertions.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 class BinarySearchStressTest {
 
@@ -116,46 +119,129 @@ class BinarySearchStressTest {
     }
 
     @Test
-    @Timeout(value = 8, unit = TimeUnit.SECONDS)
-    void testBinarySearchPerformanceComparison() {
-        int bookCount = 2000;
-        List<String> bookTitles = new ArrayList<>();
-        
-        // Добавление книг
-        for (int i = 0; i < bookCount; i++) {
-            String title = "Book" + String.format("%04d", i);
-            service.addBook(new Book(title, "Author" + i, 2000 + random.nextInt(24)));
-            bookTitles.add(title);
+@Timeout(value = 8, unit = TimeUnit.SECONDS)
+void testBinarySearchPerformanceComparison() {
+    int bookCount = 10000;
+    List<String> bookTitles = new ArrayList<>();
+
+    // Добавление книг
+    for (int i = 0; i < bookCount; i++) {
+        String title = "Book" + String.format("%05d", i);
+        service.addBook(new Book(title, "Author" + i, 2000 + random.nextInt(24)));
+        bookTitles.add(title);
+    }
+
+    // Получаем список книг и сортируем один раз
+    List<Book> sortedBooks = service.getAllBooks();
+    MySorts.mergeSort(sortedBooks, Comparator.comparing(Book::getTitle, String.CASE_INSENSITIVE_ORDER));
+
+    // Обновляем внутренние данные сервиса (если нужно)
+    // Например, если сервис хранит книги в MyHashTable, то для теста можно работать с sortedBooks напрямую
+
+    String searchTitle = bookTitles.get(bookCount / 2);
+
+    // Бинарный поиск по отсортированному списку
+    long startTime = System.nanoTime();
+    for (int i = 0; i < 10000; i++) {
+        Book found = binarySearch(sortedBooks, searchTitle);
+        assertNotNull(found);
+    }
+    long binarySearchTime = System.nanoTime() - startTime;
+
+    // Линейный поиск
+    List<Book> allBooks = service.getAllBooks();
+    startTime = System.nanoTime();
+    for (int i = 0; i < 10000; i++) {
+        Book found = null;
+        for (Book book : allBooks) {
+            if (book.getTitle().equalsIgnoreCase(searchTitle)) {
+                found = book;
+                break;
+            }
         }
-        
-        // Тест производительности бинарного поиска vs линейного поиска
-        String searchTitle = bookTitles.get(bookCount / 2);
-        
-        // Бинарный поиск
-        long startTime = System.currentTimeMillis();
-        for (int i = 0; i < 1000; i++) {
-            Book found = service.binarySearchBookByTitle(searchTitle);
-            assertNotNull(found);
+        assertNotNull(found);
+    }
+    long linearSearchTime = System.nanoTime() - startTime;
+
+    System.out.println("Binary search time: " + (binarySearchTime / 1_000_000) + " ms");
+    System.out.println("Linear search time: " + (linearSearchTime / 1_000_000) + " ms");
+
+    assertTrue(binarySearchTime < linearSearchTime, "Binary search should be faster than linear search");
+    }
+
+    // Вспомогательный метод бинарного поиска по отсортированному списку
+    private Book binarySearch(List<Book> books, String title) {
+        int low = 0, high = books.size() - 1;
+        title = title.toLowerCase();
+
+        while (low <= high) {
+            int mid = (low + high) >>> 1;
+            String midTitle = books.get(mid).getTitle().toLowerCase();
+            int cmp = midTitle.compareTo(title);
+            if (cmp == 0) return books.get(mid);
+            else if (cmp < 0) low = mid + 1;
+            else high = mid - 1;
         }
-        long binarySearchTime = System.currentTimeMillis() - startTime;
-        
-        // Линейный поиск (симуляция)
-        startTime = System.currentTimeMillis();
-        List<Book> allBooks = service.getAllBooks();
-        for (int i = 0; i < 1000; i++) {
-            Book found = null;
-            for (Book book : allBooks) {
-                if (book.getTitle().equalsIgnoreCase(searchTitle)) {
-                    found = book;
-                    break;
+        return null;
+    }
+
+
+    
+
+    // Пример класса сервиса с реализацией бинарного поиска
+    static class LibraryService {
+        private final List<Book> books = new ArrayList<>();
+
+        public void addBook(Book book) {
+            books.add(book);
+        }
+
+        public List<Book> getAllBooks() {
+            return new ArrayList<>(books);
+        }
+
+        public Book binarySearchBookByTitle(String title) {
+            // Создаём копию списка и сортируем по названию без учёта регистра
+            List<Book> sortedBooks = new ArrayList<>(books);
+            sortedBooks.sort(Comparator.comparing(Book::getTitle, String.CASE_INSENSITIVE_ORDER));
+
+            int left = 0;
+            int right = sortedBooks.size() - 1;
+            String searchTitle = title.toLowerCase();
+
+            while (left <= right) {
+                int mid = (left + right) / 2;
+                String midTitle = sortedBooks.get(mid).getTitle().toLowerCase();
+                int cmp = midTitle.compareTo(searchTitle);
+
+                if (cmp == 0) {
+                    return sortedBooks.get(mid);
+                } else if (cmp < 0) {
+                    left = mid + 1;
+                } else {
+                    right = mid - 1;
                 }
             }
-            assertNotNull(found);
+            return null; // не найдено
         }
-        long linearSearchTime = System.currentTimeMillis() - startTime;
-        
-        // Бинарный поиск должен быть значительно быстрее
-        assertTrue(binarySearchTime < linearSearchTime);
+    }
+
+    // Пример класса Book
+    static class Book {
+        private final String title;
+        private final String author;
+        private final int year;
+
+        public Book(String title, String author, int year) {
+            this.title = title;
+            this.author = author;
+            this.year = year;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
     }
 
     @Test

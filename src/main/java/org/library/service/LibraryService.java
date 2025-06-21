@@ -1,13 +1,13 @@
 package org.library.service;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
 import org.library.model.Book;
 import org.library.model.User;
 import org.library.utils.MyHashTable;
 import org.library.utils.MySorts;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Comparator;
-import java.util.Collections;
 
 public class LibraryService {
     private MyHashTable<String, Book> books;
@@ -28,6 +28,20 @@ public class LibraryService {
         }
         return false;
     }
+
+    public void sortBooksByTitle() {
+        // Получаем список книг из хеш-таблицы
+        List<Book> allBooks = new ArrayList<>(books.values());
+        // Сортируем список с помощью mergeSort из MySorts по названию без учёта регистра
+        MySorts.mergeSort(allBooks, Comparator.comparing(Book::getTitle, String.CASE_INSENSITIVE_ORDER));
+    
+        // Очищаем текущие книги и добавляем отсортированные обратно
+        books.clear();
+        for (Book book : allBooks) {
+            books.put(book.getTitle() + book.getAuthor() + book.getYear(), book);
+        }
+    }
+    
 
     public boolean loginUser(String username, String password) {
         User user = users.get(username);

@@ -33,36 +33,57 @@ public class MyHashTable<K, V> {
         int idx = hash(key);
         if (table[idx] == null) table[idx] = new LinkedList<>();
         for (Entry<K, V> entry : table[idx]) {
-            if (entry.key.equals(key)) {
-                entry.value = value;
-                return;
+            if (key == null) {
+                if (entry.key == null) {
+                    entry.value = value;
+                    return;
+                }
+            } else {
+                if (key.equals(entry.key)) {
+                    entry.value = value;
+                    return;
+                }
             }
         }
         table[idx].add(new Entry<>(key, value));
         size++;
     }
-
+    
     public V get(K key) {
         int idx = hash(key);
         if (table[idx] == null) return null;
         for (Entry<K, V> entry : table[idx]) {
-            if (entry.key.equals(key)) return entry.value;
+            if (key == null) {
+                if (entry.key == null) return entry.value;
+            } else {
+                if (key.equals(entry.key)) return entry.value;
+            }
         }
         return null;
     }
+    
 
     public boolean remove(K key) {
         int idx = hash(key);
         if (table[idx] == null) return false;
         for (Entry<K, V> entry : table[idx]) {
-            if (entry.key.equals(key)) {
-                table[idx].remove(entry);
-                size--;
-                return true;
+            if (key == null) {
+                if (entry.key == null) {
+                    table[idx].remove(entry);
+                    size--;
+                    return true;
+                }
+            } else {
+                if (key.equals(entry.key)) {
+                    table[idx].remove(entry);
+                    size--;
+                    return true;
+                }
             }
         }
         return false;
     }
+    
 
     public List<V> values() {
         List<V> vals = new ArrayList<>();
@@ -88,4 +109,20 @@ public class MyHashTable<K, V> {
             }
         }
     }
+
+    public int size() {
+        return size;
+    }
+
+    public void clear() {
+        for (int i = 0; i < table.length; i++) {
+            if (table[i] != null) {
+                table[i].clear();
+                table[i] = null;
+            }
+        }
+        size = 0;
+    }
+    
+    
 } 

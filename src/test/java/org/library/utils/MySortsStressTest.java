@@ -1,14 +1,16 @@
 package org.library.utils;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
-import org.library.model.Book;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
-import static org.junit.jupiter.api.Assertions.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.library.model.Book;
 
 class MySortsStressTest {
 
@@ -118,21 +120,29 @@ class MySortsStressTest {
     @Timeout(value = 5, unit = TimeUnit.SECONDS)
     void testSortingAlreadySortedList() {
         List<Book> books = new ArrayList<>();
-        
+    
         // Создание уже отсортированного списка
         for (int i = 0; i < 1000; i++) {
             books.add(new Book("Book" + i, "Author" + i, 2000 + i));
         }
-        
+    
         List<Book> originalBooks = new ArrayList<>(books);
-        
-        MySorts.mergeSort(books, Comparator.comparing(Book::getTitle));
-        
+    
+        // Используем компаратор с числовой сортировкой по номеру книги
+        Comparator<Book> comparator = Comparator.comparingInt(book -> {
+            String title = book.getTitle();
+            String numberPart = title.substring(4);
+            return Integer.parseInt(numberPart);
+        });
+    
+        MySorts.mergeSort(books, comparator);
+    
         // Проверка, что список не изменился
         for (int i = 0; i < books.size(); i++) {
             assertEquals(originalBooks.get(i).getTitle(), books.get(i).getTitle());
         }
     }
+    
 
     @Test
     @Timeout(value = 5, unit = TimeUnit.SECONDS)

@@ -1,11 +1,11 @@
 package org.library.app;
 
-import org.library.service.LibraryService;
+import java.util.List;
+import java.util.Scanner;
+
 import org.library.model.Book;
 import org.library.model.User;
-import java.util.InputMismatchException;
-import java.util.Scanner;
-import java.util.List;
+import org.library.service.LibraryService;
 
 public class LibraryApp {
     private static final Scanner scanner = new Scanner(System.in);
@@ -13,8 +13,8 @@ public class LibraryApp {
 
     public static void main(String[] args) {
         System.out.println("╔══════════════════════════════════════════════════════════════╗");
-        System.out.println("║                СИСТЕМА УПРАВЛЕНИЯ БИБЛИОТЕКОЙ               ║");
-        System.out.println("║                    Library Book Manager                     ║");
+        System.out.println("║                СИСТЕМА УПРАВЛЕНИЯ БИБЛИОТЕКОЙ                ║");
+        System.out.println("║                    Library Book Manager                      ║");
         System.out.println("╚══════════════════════════════════════════════════════════════╝");
         
         // Добавляем несколько тестовых книг для демонстрации
